@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { AdditiveBlending, TextureLoader } from "three";
 
-export default function ParticleEarth({ progress = 0 }) {
+export default function ParticleEarth({ progress = 0, opacity = 0.85, size = 0.035 }) {
   const pointsRef = useRef();
   const texture = useLoader(TextureLoader, "/world-map.png");
   const { initialPositions, targetPositions, colors, count } = useMemo(() => {
@@ -103,10 +103,10 @@ export default function ParticleEarth({ progress = 0 }) {
       </bufferGeometry>
 
       <pointsMaterial
-        size={0.035}
+        size={size}
         vertexColors
         transparent
-        opacity={0.85}
+        opacity={opacity}
         blending={AdditiveBlending}
         depthWrite={false}
       />
