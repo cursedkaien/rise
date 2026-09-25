@@ -2,25 +2,23 @@ import { useState } from "react";
 import useMemecoin from "./useMemecoin";
 
 const CONTRACT_ADDRESS = "CpFJrfYq32Wae2Bt36hEAUwzdyT29WwVLpZmYDF7pump";
+const SWAP_URL = `https://jup.ag/swap?buy=${encodeURIComponent(CONTRACT_ADDRESS)}&sell=So11111111111111111111111111111111111111112`;
 
 const formatUsd = (amount, isLoading) =>
-  typeof amount === "number"
-    ? new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0,
-      }).format(amount)
+  typeof amount === "number" && Number.isFinite(amount)
+    ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount)
     : isLoading ? "Loading…" : "Unavailable";
 
-const formatSupply = (amount, isLoading) =>
-  amount
-    ? new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
-        Number(amount),
-      )
+const formatSupply = (amount, isLoading) => {
+  const numericAmount = Number(amount);
+  return amount !== null && amount !== undefined && Number.isFinite(numericAmount)
+    ? new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(numericAmount)
     : isLoading ? "Loading…" : "Unavailable";
+};
 
 export default function Docs() {
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
   const { data, loading, error } = useMemecoin(CONTRACT_ADDRESS);
 
   const tokenomics = [
@@ -35,64 +33,40 @@ export default function Docs() {
     try {
       await navigator.clipboard.writeText(CONTRACT_ADDRESS);
       setCopied(true);
+      setCopyError(false);
     } catch {
       setCopied(false);
+      setCopyError(true);
     }
-    window.setTimeout(() => setCopied(false), 2_000);
+    window.setTimeout(() => {
+      setCopied(false);
+      setCopyError(false);
+    }, 2_000);
   };
 
   return (
     <section className="docs" aria-labelledby="docs-title">
-      <h2 id="docs-title">Three steps</h2>
-      <p className="docs__intro">Use the contract address below and verify it before swapping.</p>
-
+      <p className="section-eyebrow">How to buy</p>
+      <h2 id="docs-title">Three steps.</h2>
+      <p className="docs__intro">Use the address on this page and verify it in your wallet before swapping.</p>
       <ol className="docs__steps">
-        <li>
-          <strong>Load your wallet</strong>
-          <span>
-            Open a Solana wallet and make sure you have SOL for the swap and
-            network fees.
-          </span>
-        </li>
-        <li>
-          <span>
-            Copy the contract address below and paste it into your preferred
-            Solana swap.
-          </span>
-        </li>
-        <li>
-          <span>
-            Choose the amount of SOL to swap, review the transaction, then
-            confirm in your wallet.
-          </span>
-        </li>
+        <li><span className="docs__step-number">01</span><div><strong>Open a Solana wallet</strong><p>Make sure it holds SOL for the swap and network fees.</p></div></li>
+        <li><span className="docs__step-number">02</span><div><strong>Use the contract address</strong><p>Copy the address below and paste it into a swap service you trust.</p></div></li>
+        <li><span className="docs__step-number">03</span><div><strong>Review before confirming</strong><p>Check the token, amount, and transaction in your wallet before approval.</p></div></li>
       </ol>
-
       <div className="docs__contract">
-        <div>
-          <p className="docs__label">contract address</p>
+        <div className="docs__address-copy">
+          <p className="docs__label">Contract address</p>
           <code>{CONTRACT_ADDRESS}</code>
         </div>
-        <button type="button" onClick={copyContractAddress}>
-          {copied ? "Copied" : "Copy address"}
-        </button>
+        <button type="button" onClick={copyContractAddress} aria-live="polite">{copied ? "Copied" : "Copy address"}</button>
       </div>
-
+      {copyError && <p className="docs__status" role="status">Copy was blocked. Select and copy the address above.</p>}
       {error && <p className="docs__status" role="status">Live token data is unavailable right now.</p>}
-
+      <a className="docs__swap-link" href={SWAP_URL} target="_blank" rel="noreferrer">Open swap</a>
       <div className="docs__tokenomics">
-        <div>
-          <p className="docs__eyebrow">The numbers</p>
-          <h3>Tokenomics</h3>
-        </div>
-        <dl>
-          {tokenomics.map(([label, value]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
+        <div><p className="section-eyebrow">Live figures</p><h3>Token details</h3></div>
+        <dl>{tokenomics.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
       </div>
     </section>
   );

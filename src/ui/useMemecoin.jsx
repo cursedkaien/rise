@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const DEFAULT_REFRESH_INTERVAL = 15_000;
-const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
-let hasAttemptedSolanaSupply = false;
+const DEFAULT_REFRESH_INTERVAL = 60_000;
+const REQUEST_TIMEOUT = 8_000;
 
 /**
  * Fetches the most-liquid DexScreener pair for a token.
@@ -29,6 +28,11 @@ export default function useMemecoin(
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
+    let timedOut = false;
+    const timeout = window.setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, REQUEST_TIMEOUT);
 
     setLoading(true);
     setError(null);
@@ -55,27 +59,8 @@ export default function useMemecoin(
           : bestPair,
       );
 
-      let totalSupply = null;
-
-      if (chainId === "solana" && !hasAttemptedSolanaSupply) {
-        hasAttemptedSolanaSupply = true;
-        const supplyResponse = await fetch(SOLANA_RPC_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: 1,
-            method: "getTokenSupply",
-            params: [tokenAddress],
-          }),
-          signal: controller.signal,
-        });
-
-        if (supplyResponse.ok) {
-          const supplyResult = await supplyResponse.json();
-          totalSupply = supplyResult.result?.value?.uiAmountString ?? null;
-        }
-      }
+      // DexScreener does not expose supply; do not call the blocked public RPC.
+      const totalSupply = null;
 
       setData({
         name: mainPair.baseToken.name,
@@ -90,12 +75,13 @@ export default function useMemecoin(
         dexUrl: mainPair.url,
       });
     } catch (requestError) {
-      if (requestError.name !== "AbortError") {
-        setError(requestError.message || "Unable to load token data.");
+      if (requestError.name !== "AbortError" || timedOut) {
+        setError(timedOut ? "Token data request timed out." : requestError.message || "Unable to load token data.");
         setData(null);
       }
     } finally {
-      if (!controller.signal.aborted) {
+      window.clearTimeout(timeout);
+      if (!controller.signal.aborted || timedOut) {
         setLoading(false);
       }
     }

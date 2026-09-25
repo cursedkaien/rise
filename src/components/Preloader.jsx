@@ -1,5 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect, useRef, useState } from "react";
+import SceneErrorBoundary from "./SceneErrorBoundary";
 import GlobeScene from "./GlobeScene";
 
 const BUILD_DURATION = 1200;
@@ -8,6 +9,7 @@ const DISPERSE_DURATION = 900;
 const FADE_DURATION = 250;
 const TOTAL_DURATION =
   BUILD_DURATION + HOLD_DURATION + DISPERSE_DURATION + FADE_DURATION;
+const SCENE_TIMEOUT = 12_000;
 
 const easeOutCubic = (value) => 1 - (1 - value) ** 3;
 const easeInCubic = (value) => value ** 3;
@@ -68,6 +70,11 @@ export default function Preloader({ onComplete }) {
     return () => cancelAnimationFrame(frameId);
   }, [onComplete, sceneReady]);
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setSceneReady(true), SCENE_TIMEOUT);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
   return (
     <div
       className="preloader"
@@ -76,7 +83,7 @@ export default function Preloader({ onComplete }) {
         inset: 0,
         width: "100vw",
         height: "100vh",
-        background: "#050508",
+        background: "#11161C",
         opacity,
         transition: "opacity 120ms linear",
       }}
@@ -91,7 +98,7 @@ export default function Preloader({ onComplete }) {
         style={{
           background: "transparent",
           border: 0,
-          color: "rgba(255, 255, 255, 0.68)",
+          color: "rgba(243, 240, 232, 0.72)",
           cursor: "pointer",
           fontFamily: "system-ui, sans-serif",
           fontSize: "0.72rem",
@@ -107,12 +114,13 @@ export default function Preloader({ onComplete }) {
         Skip
       </button>
 
+      <SceneErrorBoundary onError={() => setSceneReady(true)} fallback={null}>
       <Canvas
         camera={{ position: [0, 0, 7.5], fov: 60 }}
         dpr={[1, 1.5]}
         gl={{ antialias: false, powerPreference: "high-performance" }}
       >
-        <color attach="background" args={["#050508"]} />
+        <color attach="background" args={["#11161C"]} />
         <ambientLight intensity={1.5} />
         <directionalLight position={[5, 10, 5]} intensity={2} />
 
@@ -121,6 +129,7 @@ export default function Preloader({ onComplete }) {
           <SceneReady onReady={() => setSceneReady(true)} />
         </Suspense>
       </Canvas>
+      </SceneErrorBoundary>
     </div>
   );
 }

@@ -4,7 +4,7 @@ const questions = [
   {
     question: "What is RISE?",
     answer:
-      "RISE is a fan-made community token inspired by Rise, the Artemis II zero-gravity indicator mascot.",
+      "RISE is a fan-made token inspired by Rise, the zero-gravity indicator selected for Artemis II. The token is separate from the spacecraft and mission.",
   },
   {
     question: "Where can I find the official links?",
@@ -14,7 +14,7 @@ const questions = [
   {
     question: "Is RISE affiliated with NASA?",
     answer:
-      "No. Rise is a fan-made token inspired by NASA’s Artemis II mascot. It has no affiliation with NASA.",
+      "No. NASA selected the Rise character as Artemis II’s zero-gravity indicator. The token is independently fan-made and has no affiliation with NASA.",
   },
   {
     question: "Is this financial advice?",

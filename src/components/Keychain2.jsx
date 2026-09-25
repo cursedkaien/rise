@@ -1,6 +1,6 @@
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { MathUtils } from "three";
 
 const PARTS = [
@@ -49,12 +49,9 @@ function dampPart(mesh, target, offset, rotation, amount, delta) {
   );
 }
 
-export default function Keychain2({ progress = 0, forceVisible = false, ...props }) {
+export default function Keychain2({ progress = 0, progressRef, spreadScale = 1, forceVisible = false, ...props }) {
   const { nodes, materials } = useGLTF("/keychain2-web.glb");
   const partRefs = useRef({});
-  const [isCompactViewport, setIsCompactViewport] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 768 : false,
-  );
   const finalTransforms = useMemo(
     () =>
       Object.fromEntries(
@@ -73,26 +70,16 @@ export default function Keychain2({ progress = 0, forceVisible = false, ...props
     [nodes],
   );
 
-  useEffect(() => {
-    const updateViewport = () => setIsCompactViewport(window.innerWidth < 768);
-    updateViewport();
-    window.addEventListener("resize", updateViewport);
-    return () => window.removeEventListener("resize", updateViewport);
-  }, []);
-
   useFrame((_, delta) => {
-    const assemble = forceVisible
-      ? 1
-      : MathUtils.smoothstep(progress, 0.49, 0.68);
-    const explodedAmount = 1 - assemble;
-    const shouldReveal =
-      forceVisible || (!isCompactViewport && assemble > 0.04 && progress < 0.72);
-
+    const reducedMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const currentProgress = reducedMotion ? 0.58 : (progressRef?.current ?? progress);
+    const assemble = forceVisible ? 1 : MathUtils.smoothstep(currentProgress, 0.49, 0.68);
+    const explodedAmount = (1 - assemble) * spreadScale;
     for (const part of PARTS) {
       const mesh = partRefs.current[part.name];
       if (!mesh) continue;
 
-      mesh.visible = shouldReveal;
+      mesh.visible = true;
       dampPart(
         mesh,
         finalTransforms[part.name],

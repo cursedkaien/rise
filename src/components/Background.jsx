@@ -8,6 +8,8 @@ import Hero from "../ui/Hero";
 import Impact from "../ui/Impact";
 import Vision from "../ui/Vision";
 import Keychain1 from "./Keychain1";
+import SceneErrorBoundary from "./SceneErrorBoundary";
+import { supportsWebGL } from "./webgl";
 import Keychain2 from "./Keychain2";
 
 const clamp = (value) => Math.min(Math.max(value, 0), 1);
@@ -15,14 +17,8 @@ const clamp = (value) => Math.min(Math.max(value, 0), 1);
 function StoryCanvas({ progress }) {
   return (
     <>
-      <ambientLight intensity={2.2} />
-      <directionalLight intensity={3.5} position={[4, 5, 6]} />
-      <pointLight
-        color="#4A8FE3"
-        distance={12}
-        intensity={5}
-        position={[2, -3, 3]}
-      />
+      <ambientLight intensity={1.8} />
+      <directionalLight intensity={2.8} position={[4, 5, 6]} />
       <CharacterRig progress={progress} />
     </>
   );
@@ -30,66 +26,132 @@ function StoryCanvas({ progress }) {
 
 function CharacterRig({ progress }) {
   const group = useRef();
+  const firstModel = useRef();
+  const firstIntro = useRef(0);
+  const firstProgressRef = useRef(0);
   const { viewport } = useThree();
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const updateIsMobile = () => setIsMobile(window.innerWidth < 768);
-    updateIsMobile();
-    window.addEventListener("resize", updateIsMobile);
-    return () => window.removeEventListener("resize", updateIsMobile);
-  }, []);
-
-  const fitScale = isMobile
-    ? 1.45
-    : Math.min(2.55, Math.max(1.2, viewport.width / 2.9));
-  const xOffset = isMobile ? 0.35 : 1.15;
+  const fitScale = Math.min(2.55, Math.max(1.2, viewport.width / 2.9));
 
   useFrame((state, delta) => {
+    if (group.current) {
+      group.current.rotation.y = MathUtils.damp(
+        group.current.rotation.y,
+        state.pointer.x * 0.12,
+        4,
+        delta,
+      );
+      group.current.rotation.x = MathUtils.damp(
+        group.current.rotation.x,
+        -state.pointer.y * 0.06,
+        4,
+        delta,
+      );
+    }
+
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    firstIntro.current = reducedMotion
+      ? 1
+      : Math.min(1, firstIntro.current + delta / 1.2);
+
+    if (firstModel.current) {
+      const introEase = MathUtils.smoothstep(firstIntro.current, 0, 1);
+      firstModel.current.scale.setScalar(MathUtils.lerp(1.65, 1, introEase));
+    }
+
+    if (firstIntro.current < 1) {
+      firstProgressRef.current = MathUtils.lerp(
+        0,
+        0.45,
+        MathUtils.smoothstep(firstIntro.current, 0, 1),
+      );
+    } else if (progress < 0.12) {
+      firstProgressRef.current = 0.45;
+    } else if (progress < 0.28) {
+      firstProgressRef.current = MathUtils.mapLinear(progress, 0.12, 0.28, 0.45, 0);
+    } else if (progress < 0.44) {
+      firstProgressRef.current = MathUtils.mapLinear(progress, 0.28, 0.44, 0, 0.45);
+    } else if (progress < 0.62) {
+      firstProgressRef.current = MathUtils.mapLinear(progress, 0.44, 0.62, 0.45, 0);
+    } else {
+      firstProgressRef.current = 0;
+    }
+  });
+
+  const secondProgress = MathUtils.clamp(
+    MathUtils.mapLinear(progress, 0.62, 0.82, 0.49, 0.72),
+    0,
+    1,
+  );
+
+  return (
+    <group ref={group} position={[1.15, 0.18, 0]} scale={fitScale}>
+      <group ref={firstModel} visible={progress < 0.62}>
+        <Keychain1 progressRef={firstProgressRef} spreadScale={0.075} />
+      </group>
+      <group visible={progress >= 0.62}>
+        <Keychain2 progress={secondProgress} spreadScale={0.075} />
+      </group>
+    </group>
+  );
+}
+
+function MobileModelRig({ Model, stageRef, progressRef }) {
+  const group = useRef();
+  const { viewport } = useThree();
+  const fitScale = MathUtils.clamp(viewport.width * 0.42, 1.35, 1.8);
+
+  useFrame((state, delta) => {
+    const stage = stageRef.current;
+    if (stage) {
+      const bounds = stage.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const visibleProgress = clamp(
+        (viewportHeight * 0.7 - bounds.top) / (bounds.height + viewportHeight * 0.3),
+      );
+      progressRef.current = Model === Keychain1
+        ? MathUtils.clamp(MathUtils.mapLinear(visibleProgress, 0.2, 0.65, 0.18, 0.42), 0, 1)
+        : MathUtils.clamp(MathUtils.mapLinear(visibleProgress, 0.15, 0.7, 0.43, 0.75), 0, 1);
+    }
+
     if (!group.current) return;
-    group.current.rotation.y = MathUtils.damp(
-      group.current.rotation.y,
-      state.pointer.x * 0.12,
-      4,
-      delta,
-    );
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const idleTurn = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 0.45) * 0.11;
+    group.current.rotation.y = MathUtils.damp(group.current.rotation.y, idleTurn, 3, delta);
     group.current.rotation.x = MathUtils.damp(
       group.current.rotation.x,
-      -state.pointer.y * 0.06,
-      4,
+      reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 0.22) * 0.018,
+      3,
       delta,
     );
   });
 
   return (
-    <group
-      ref={group}
-      position={[xOffset, isMobile ? 0.12 : 0.18, 0]}
-      scale={fitScale}
-    >
-      <Keychain1 progress={progress} />
-      <Keychain2 progress={progress} />
+    <group ref={group} scale={fitScale} position={[0, 0, 0]}>
+      <Model progressRef={progressRef} spreadScale={0.1} />
     </group>
   );
 }
 
-function MobileKeychainStage() {
+function MobileKeychainStage({ Model, label, webglAvailable }) {
+  const stageRef = useRef(null);
+  const progressRef = useRef(0);
+
   return (
-    <div className="mobile-keychain-stage" aria-label="Rise mascot">
+    <div ref={stageRef} className="mobile-keychain-stage" role="img" aria-label={label}>
+      {webglAvailable ? <SceneErrorBoundary fallback={<div className="model-fallback" role="note">3D view unavailable</div>}>
       <Canvas
-        camera={{ fov: 48, position: [0, 0, 5.2] }}
+        camera={{ fov: 42, position: [0, 0, 6.5] }}
         dpr={[1, 1.5]}
+        fallback={<div className="scene-fallback" aria-hidden="true" />}
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       >
-        <ambientLight intensity={2.2} />
-        <directionalLight intensity={3.5} position={[4, 5, 6]} />
-        <pointLight color="#4A8FE3" distance={12} intensity={5} position={[2, -3, 3]} />
+        <ambientLight intensity={1.8} />
+        <directionalLight intensity={2.8} position={[4, 5, 6]} />
         <Suspense fallback={null}>
-          <group scale={1.7} position={[0, -0.05, 0]}>
-            <Keychain2 forceVisible />
-          </group>
+          <MobileModelRig Model={Model} stageRef={stageRef} progressRef={progressRef} />
         </Suspense>
       </Canvas>
+      </SceneErrorBoundary> : <div className="model-fallback" role="note">3D preview unavailable</div>}
     </div>
   );
 }
@@ -110,22 +172,16 @@ function Navigation() {
         aria-controls="primary-navigation"
         onClick={() => setIsMenuOpen((open) => !open)}
       >
-        Menu
+        {isMenuOpen ? "Close" : "Menu"}
       </button>
       <nav
         id="primary-navigation"
         className={isMenuOpen ? "is-open" : ""}
         aria-label="Primary navigation"
       >
-        <a href="#vision" onClick={closeMenu}>
-          Vision
-        </a>
-        <a href="#community" onClick={closeMenu}>
-          Community
-        </a>
-        <a href="#docs" onClick={closeMenu}>
-          Docs
-        </a>
+        <a href="#vision" onClick={closeMenu}>Story</a>
+        <a href="#community" onClick={closeMenu}>Community</a>
+        <a href="#docs" onClick={closeMenu}>How to buy</a>
       </nav>
       <a className="edition-cta" href="#docs" onClick={closeMenu}>
         Token details
@@ -135,9 +191,12 @@ function Navigation() {
 }
 
 export default function Background() {
-  const stageRef = useRef();
+  const stageRef = useRef(null);
   const [progress, setProgress] = useState(0);
-  const [isCompactViewport, setIsCompactViewport] = useState(false);
+  const [isCompactViewport, setIsCompactViewport] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 768,
+  );
+  const [webglAvailable] = useState(supportsWebGL);
 
   useEffect(() => {
     const updateViewport = () => setIsCompactViewport(window.innerWidth < 768);
@@ -168,30 +227,36 @@ export default function Background() {
     <div className="edition-shell">
       <Navigation />
       <div className="story-stage" ref={stageRef}>
-        <div
-          className={`story-canvas ${progress < 0.12 ? "story-canvas--hero" : ""}`}
-          aria-hidden="true"
-        >
-          <Canvas
-            camera={{ fov: 48, position: [0, 0, 5.2] }}
-            dpr={[1, 1.5]}
-            fallback={<div className="scene-fallback" />}
-            gl={{
-              alpha: true,
-              antialias: true,
-              powerPreference: "high-performance",
+        {webglAvailable && !isCompactViewport && (
+          <div
+            className="story-canvas story-canvas--hero"
+            style={{
+              "--wordmark-x": `${-20 * progress}vw`,
+              "--wordmark-y": `${-22 * progress}vh`,
+              "--wordmark-scale": 1 - 0.38 * progress,
+              "--wordmark-opacity": Math.max(0, 0.87 * (1 - 1.25 * progress)),
             }}
+            aria-hidden="true"
           >
-            <Suspense fallback={null}>
-              <StoryCanvas progress={progress} />
-            </Suspense>
-          </Canvas>
-        </div>
+            <SceneErrorBoundary fallback={<div className="scene-fallback" aria-hidden="true"/>}>
+            <Canvas
+              camera={{ fov: 48, position: [0, 0, 5.2] }}
+              dpr={[1, 1.5]}
+              fallback={<div className="scene-fallback" aria-hidden="true" />}
+              gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+            >
+              <Suspense fallback={null}>
+                <StoryCanvas progress={progress} />
+              </Suspense>
+            </Canvas>
+            </SceneErrorBoundary>
+          </div>
+        )}
         <main className="edition-story" aria-label="Rise story">
-          <Hero />
+          <Hero mobileScene={isCompactViewport ? <MobileKeychainStage Model={Keychain1} label="Rise keychain assembling" webglAvailable={webglAvailable} /> : null} />
           <section className="edition-section content-section" id="vision">
             <Vision />
-            {isCompactViewport && <MobileKeychainStage />}
+            {isCompactViewport && <MobileKeychainStage Model={Keychain2} label="Rise mascot assembling" webglAvailable={webglAvailable} />}
           </section>
           <section className="edition-section content-section" id="impact">
             <Impact />
@@ -206,26 +271,13 @@ export default function Background() {
           <FAQ />
           <footer className="site-footer">
             <p>
-              Rise is a fan-made token inspired by NASA&apos;s Artemis II
-              mascot. It has no affiliation with NASA, and nothing on this site
-              is financial advice.
+              Rise is a fan-made token inspired by NASA&apos;s Artemis II mascot. It has no affiliation with NASA, and nothing on this site is financial advice.
             </p>
-            <div>
-              <a
-                href="https://t.me/risecoincto"
-                rel="noreferrer"
-                target="_blank"
-              >
-                Telegram
-              </a>
-              <a
-                href="https://x.com/risecoincto?s=21"
-                rel="noreferrer"
-                target="_blank"
-              >
-                X
-              </a>
-              <code>CpFJrfYq32Wae2Bt36hEAUwzdyT29WwVLpZmYDF7pump</code>
+            <div className="site-footer__links">
+              <a href="https://t.me/risecoincto" rel="noreferrer" target="_blank">Telegram</a>
+              <a href="https://x.com/risecoincto?s=21" rel="noreferrer" target="_blank">X</a>
+              <a href="#docs">Token details</a>
+              <code className="site-footer__contract">CpFJrfYq32Wae2Bt36hEAUwzdyT29WwVLpZmYDF7pump</code>
             </div>
           </footer>
         </main>

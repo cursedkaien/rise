@@ -1,12 +1,12 @@
 export default function Vision() {
   return (
-    <section>
+    <div className="origin-copy">
+      <p className="section-eyebrow">From Earthrise to Artemis II</p>
+      <h2>One small character, a long way from home.</h2>
       <p>
-        Rise was selected by NASA as the zero-gravity indicator for Artemis II,
-        the crewed mission that flew around the Moon in April 2026. This token
-        is a fan-made community project inspired by the mascot and is not
-        affiliated with NASA.
+        The idea for Rise came from the Earthrise photograph: a smiling Moon wearing a cap patterned with Earth. NASA later selected the character as Artemis II’s zero-gravity indicator. The mission launched on April 1, 2026, looped around the Moon, and returned to Earth ten days later.
       </p>
-    </section>
+      <p className="origin-note">The token is inspired by Rise; it was not part of the mission and is not connected to NASA.</p>
+    </div>
   );
 }

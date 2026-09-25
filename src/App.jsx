@@ -1,12 +1,15 @@
 import { useState } from "react";
 import Preloader from "./components/Preloader";
 import Background from "./components/Background";
+import { supportsWebGL } from "./components/webgl";
 import "./edition.css";
 
 const shouldPlayPreloader = () => {
   if (typeof window === "undefined") return false;
 
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return false;
+
+  if (!supportsWebGL()) return false;
 
   // Replay the sequence during review with: ?preloader
   if (new URLSearchParams(window.location.search).has("preloader")) return true;
@@ -25,6 +28,5 @@ export default function App() {
     }} />;
   }
 
-  // Replace this shell with the main site once that page is ready.
   return <Background />;
 }

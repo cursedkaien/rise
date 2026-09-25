@@ -1,6 +1,6 @@
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { MathUtils } from "three";
 
 const PARTS = [
@@ -53,12 +53,9 @@ function dampPart(mesh, target, offset, rotation, amount, delta) {
   );
 }
 
-export default function Keychain1({ progress = 0, ...props }) {
+export default function Keychain1({ progress = 0, progressRef, spreadScale = 1, ...props }) {
   const { nodes, materials } = useGLTF("/keychain1-web.glb");
   const partRefs = useRef({});
-  const [isCompactViewport, setIsCompactViewport] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 768 : false,
-  );
   const finalTransforms = useMemo(
     () =>
       Object.fromEntries(
@@ -77,32 +74,17 @@ export default function Keychain1({ progress = 0, ...props }) {
     [nodes],
   );
 
-  useEffect(() => {
-    const updateViewport = () => setIsCompactViewport(window.innerWidth < 768);
-    updateViewport();
-    window.addEventListener("resize", updateViewport);
-    return () => window.removeEventListener("resize", updateViewport);
-  }, []);
-
   useFrame((_, delta) => {
-    const openingRelease = MathUtils.smoothstep(progress, 0.04, 0.13);
-    const laterAssembly = MathUtils.smoothstep(progress, 0.14, 0.32);
-    const assemble = isCompactViewport
-      ? 1
-      : progress < 0.14
-        ? 1 - openingRelease
-        : laterAssembly;
-    const disperse = isCompactViewport ? 0 : MathUtils.smoothstep(progress, 0.43, 0.55);
-    const explodedAmount = 1 - assemble + disperse;
+    const reducedMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const currentProgress = reducedMotion ? 0.32 : (progressRef?.current ?? progress);
+    const assemble = MathUtils.smoothstep(currentProgress, 0.02, 0.38);
+    const explodedAmount = (1 - assemble) * spreadScale;
 
-    for (const [index, part] of PARTS.entries()) {
+    for (const part of PARTS) {
       const mesh = partRefs.current[part.name];
       if (!mesh) continue;
 
-      const revealAt = index * 0.055;
-      const shouldReveal =
-        isCompactViewport || (assemble >= revealAt && disperse < 0.98);
-      mesh.visible = shouldReveal;
+      mesh.visible = true;
       dampPart(
         mesh,
         finalTransforms[part.name],
