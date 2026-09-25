@@ -1,0 +1,852 @@
+@font-face {
+  font-family: "Sentient";
+  font-style: normal;
+  font-weight: 200 800;
+  src: url("/fonts/Sentient-Variable.woff2") format("woff2");
+}
+
+:root {
+  --paper: #111211;
+  --surface: #181917;
+  --ink: #f1eee7;
+  --line: rgba(241, 238, 231, 0.12);
+  --muted: #a8a59d;
+  --accent: #4a8fe3;
+  --blush: #e79a91;
+}
+body {
+  background: var(--paper);
+}
+.edition-shell {
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100svh;
+  overflow-x: clip;
+}
+.story-stage {
+  min-height: 700svh;
+  position: relative;
+}
+.story-canvas {
+  align-items: center;
+  display: flex;
+  height: 100svh;
+  justify-content: center;
+  left: 0;
+  max-width: 100vw;
+  overflow: hidden;
+  pointer-events: none;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 0;
+}
+.story-canvas > div,
+.story-canvas canvas {
+  height: 100% !important;
+  max-height: 100%;
+  max-width: 100%;
+  width: 100% !important;
+}
+.edition-story {
+  margin-top: -100svh;
+  min-height: 700svh;
+  position: relative;
+  z-index: 1;
+}
+
+.edition-nav {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  left: 0;
+  padding: 20px clamp(20px, 3.5vw, 56px);
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 5;
+}
+.edition-nav a {
+  color: var(--ink);
+  font:
+    700 11px/1 Arial,
+    sans-serif;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.edition-brand {
+  font-family: "Bricolage Grotesque Variable", Arial, sans-serif !important;
+  font-size: 25px !important;
+  letter-spacing: -0.11em !important;
+  text-transform: none !important;
+}
+.edition-nav nav {
+  display: flex;
+  gap: clamp(18px, 3vw, 42px);
+}
+.edition-cta,
+.button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  color: var(--ink);
+  display: inline-flex;
+  font:
+    700 12px/1 Arial,
+    sans-serif;
+  gap: 8px;
+  justify-content: center;
+  padding: 13px 17px;
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+.edition-cta:hover,
+.button:hover {
+  background: var(--ink);
+  color: var(--paper);
+  transform: translateY(-2px);
+}
+.button-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.button-primary:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.button-text {
+  border-color: transparent;
+  padding-inline: 0;
+}
+.button-secondary {
+  background: var(--surface);
+}
+.edition-index {
+  bottom: 24px;
+  display: grid;
+  font:
+    700 10px/1.2 Arial,
+    sans-serif;
+  gap: 3px;
+  left: clamp(20px, 3.5vw, 56px);
+  letter-spacing: 0.05em;
+  position: fixed;
+  text-transform: uppercase;
+  z-index: 4;
+}
+
+.hero-section,
+.edition-section,
+.faq-section {
+  box-sizing: border-box;
+  min-height: 100svh;
+  padding: clamp(100px, 12vw, 150px) clamp(24px, 7vw, 112px) 72px;
+  position: relative;
+}
+.hero-section,
+.edition-section {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.hero-copy,
+.content-section > section,
+.content-section > div,
+.faq-heading,
+.faq-list {
+  max-width: min(35rem, 43vw);
+  position: relative;
+  z-index: 2;
+}
+.eyebrow,
+.section-eyebrow {
+  font:
+    700 11px/1 Arial,
+    sans-serif;
+  letter-spacing: 0.1em;
+  margin: 0 0 18px;
+  text-transform: uppercase;
+}
+.hero-section h1,
+.content-section h2,
+.faq-heading h2,
+.docs h2 {
+  color: var(--ink);
+  font-family: "Bricolage Grotesque Variable", Arial, sans-serif;
+  font-weight: 470;
+  letter-spacing: -0.085em;
+}
+.hero-section h1 {
+  font-size: clamp(72px, 10vw, 160px);
+  line-height: 0.77;
+  margin: 0;
+}
+.hero-section h1 em {
+  display: block;
+  font-style: italic;
+}
+.hero-description {
+  font:
+    400 clamp(17px, 1.5vw, 22px)/1.28 Arial,
+    sans-serif;
+  margin: 28px 0 0;
+  max-width: 27ch;
+}
+.hero-actions,
+.community-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+.hero-word {
+  bottom: -0.1em;
+  color: var(--ink);
+  font:
+    800 clamp(160px, 31vw, 520px)/0.72 Arial,
+    sans-serif;
+  letter-spacing: -0.14em;
+  margin: 0 0 0 -0.1em;
+  opacity: 0.055;
+  pointer-events: none;
+  position: absolute;
+  right: 3vw;
+}
+.hero-scroll {
+  bottom: 28px;
+  font:
+    700 10px/1 Arial,
+    sans-serif;
+  letter-spacing: 0.07em;
+  margin: 0;
+  position: absolute;
+  right: clamp(20px, 3.5vw, 56px);
+  text-transform: uppercase;
+}
+
+.edition-section:nth-of-type(odd) {
+  align-items: flex-end;
+  text-align: right;
+}
+.content-section h2,
+.faq-heading h2 {
+  font-size: clamp(48px, 7vw, 118px);
+  line-height: 0.83;
+  margin: 0;
+}
+.content-section p {
+  font:
+    400 clamp(18px, 1.8vw, 27px)/1.22 Arial,
+    sans-serif;
+  max-width: 27ch;
+}
+.impact__steps,
+.docs__steps {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0;
+}
+.impact__steps li,
+.docs__steps li,
+.docs__contract,
+.docs__tokenomics {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.impact__steps li,
+.docs__steps li {
+  padding: 16px;
+}
+.impact__steps h3,
+.docs__steps strong {
+  display: block;
+  font:
+    700 15px/1.1 Arial,
+    sans-serif;
+  margin: 14px 0 8px;
+}
+.impact__steps span,
+.docs__steps span,
+.impact__steps p,
+.docs__steps p {
+  font:
+    400 13px/1.35 Arial,
+    sans-serif;
+}
+.docs {
+  padding: 0;
+}
+.docs h2 {
+  font-size: clamp(48px, 7vw, 100px);
+  line-height: 0.8;
+}
+.docs__intro,
+.docs__status,
+.docs__steps span,
+.docs__contract code,
+.docs__tokenomics dd,
+.faq-answer p {
+  color: var(--muted);
+  font:
+    400 15px/1.45 Arial,
+    sans-serif;
+}
+.docs__contract,
+.docs__tokenomics {
+  margin-top: 16px;
+  padding: 16px;
+}
+.docs__contract {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+.docs__contract code {
+  background: transparent;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  padding: 0;
+}
+.docs__contract button {
+  background: var(--ink);
+  border: 0;
+  border-radius: 999px;
+  color: var(--paper);
+  cursor: pointer;
+  font:
+    700 11px/1 Arial,
+    sans-serif;
+  padding: 11px 14px;
+}
+.docs__tokenomics {
+  align-items: start;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 0.8fr 1.2fr;
+}
+.docs__tokenomics h3 {
+  font:
+    500 34px/0.9 "Bricolage Grotesque Variable",
+    Arial,
+    sans-serif;
+  letter-spacing: -0.06em;
+  margin: 0;
+}
+.docs__tokenomics dl {
+  margin: 0;
+}
+.docs__tokenomics dl > div {
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  font:
+    700 11px/1 Arial,
+    sans-serif;
+  justify-content: space-between;
+  padding: 9px 0;
+  text-transform: uppercase;
+}
+.docs__tokenomics dd {
+  color: var(--ink);
+  margin: 0;
+  text-transform: none;
+}
+
+.faq-section {
+  align-items: center;
+  display: grid;
+  gap: clamp(30px, 8vw, 120px);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+}
+.faq-list {
+  width: 100%;
+}
+.faq-item {
+  border-top: 1px solid var(--ink);
+}
+.faq-item:last-child {
+  border-bottom: 1px solid var(--ink);
+}
+.faq-trigger {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  font:
+    500 clamp(22px, 2.5vw, 38px)/1 "Bricolage Grotesque Variable",
+    Arial,
+    sans-serif;
+  justify-content: space-between;
+  letter-spacing: -0.05em;
+  padding: 20px 0;
+  text-align: left;
+  width: 100%;
+}
+.faq-answer {
+  max-width: 48ch;
+  padding: 0 0 20px;
+}
+
+@media (max-width: 800px) {
+  .edition-nav nav,
+  .edition-index {
+    display: none;
+  }
+  .hero-section,
+  .edition-section,
+  .faq-section {
+    min-height: 100svh;
+    padding: 96px 24px 46px;
+  }
+  .hero-copy,
+  .content-section > section,
+  .content-section > div,
+  .faq-heading,
+  .faq-list {
+    max-width: 100%;
+  }
+  .story-canvas {
+    opacity: 0.72;
+  }
+  .edition-section:nth-of-type(odd) {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .impact__steps,
+  .docs__steps,
+  .faq-section,
+  .docs__tokenomics {
+    grid-template-columns: 1fr;
+  }
+}
+.edition-shell {
+  font-family: "Geist Variable", Arial, sans-serif;
+}
+.hero-section h1,
+.content-section h2,
+.faq-heading h2,
+.docs h2,
+.edition-brand,
+.faq-trigger {
+  font-family: "Bricolage Grotesque Variable", Arial, sans-serif;
+}
+.site-footer {
+  border-top: 1px solid var(--line);
+  display: grid;
+  font-size: 13px;
+  gap: 24px;
+  grid-template-columns: 1fr 1fr;
+  line-height: 1.5;
+  margin: 0 clamp(24px, 7vw, 112px);
+  padding: 48px 0;
+}
+.site-footer p {
+  margin: 0;
+  max-width: 52ch;
+}
+.site-footer div {
+  display: grid;
+  gap: 10px;
+}
+.site-footer a {
+  color: var(--ink);
+}
+.site-footer code {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.edition-shell :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+  .story-canvas {
+    display: none;
+  }
+  .story-stage,
+  .edition-story {
+    min-height: auto;
+  }
+}
+@media (max-width: 800px) {
+  .site-footer {
+    grid-template-columns: 1fr;
+    margin: 0 24px;
+  }
+}
+
+.scene-fallback {
+  background: #111211;
+  height: 100%;
+  width: 100%;
+}
+.edition-menu {
+  display: none;
+}
+@media (max-width: 800px) {
+  .edition-nav {
+    padding: 18px 24px;
+  }
+  .edition-menu {
+    background: transparent;
+    border: 0;
+    color: var(--ink);
+    cursor: pointer;
+    display: block;
+    font:
+      700 11px/1 Arial,
+      sans-serif;
+    letter-spacing: 0.06em;
+    padding: 12px;
+    text-transform: uppercase;
+  }
+  .edition-nav nav {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: none;
+    left: 24px;
+    padding: 16px;
+    position: absolute;
+    right: 24px;
+    top: 64px;
+  }
+  .edition-nav nav.is-open {
+    display: grid;
+    gap: 16px;
+  }
+  .edition-cta {
+    display: none;
+  }
+}
+
+/* Hero: one framed scene, separate from the continuous editorial sections. */
+.sr-only {
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+.hero-section {
+  background: var(--paper);
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: 0;
+}
+.hero-wordmark {
+  bottom: 25%;
+  color: var(--ink);
+  font-family: "Bricolage Grotesque Variable", Arial, sans-serif;
+  font-size: clamp(170px, 18vw, 350px);
+  font-style: italic;
+  font-variation-settings:
+    "wdth" 85,
+    "opsz" 96;
+  font-weight: 800;
+  left: 43%;
+  letter-spacing: -0.16em;
+  line-height: 0.7;
+  margin: 0;
+  opacity: 0.74;
+  pointer-events: none;
+  position: absolute;
+  transform: rotate(-5deg);
+  z-index: 0;
+}
+.hero-copy {
+  bottom: clamp(130px, 15vh, 178px);
+  left: clamp(28px, 6vw, 96px);
+  max-width: 30ch;
+  position: absolute;
+  z-index: 2;
+}
+.hero-description {
+  color: var(--ink);
+  font:
+    400 clamp(17px, 1.35vw, 21px)/1.38 "Geist Variable",
+    Arial,
+    sans-serif;
+  margin: 0;
+}
+.hero-actions {
+  margin-top: 24px;
+}
+.hero-data {
+  bottom: 34px;
+  display: flex;
+  gap: clamp(24px, 4vw, 64px);
+  left: clamp(28px, 6vw, 96px);
+  margin: 0;
+  position: absolute;
+  z-index: 2;
+}
+.hero-data div {
+  min-width: 100px;
+}
+.hero-data dt {
+  color: var(--muted);
+  font:
+    700 10px/1 Arial,
+    sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hero-data dd {
+  color: var(--ink);
+  font:
+    500 clamp(17px, 1.6vw, 23px)/1.1 "Geist Variable",
+    Arial,
+    sans-serif;
+  letter-spacing: -0.04em;
+  margin: 8px 0 0;
+}
+.hero-socials {
+  bottom: 34px;
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  right: clamp(28px, 4vw, 64px);
+  z-index: 3;
+}
+.hero-socials a {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--ink);
+  display: flex;
+  font:
+    700 12px/1 Arial,
+    sans-serif;
+  height: 34px;
+  justify-content: center;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+  width: 34px;
+}
+.hero-socials a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+.hero-scroll {
+  bottom: 44px;
+  color: var(--muted);
+  font:
+    700 10px/1 Arial,
+    sans-serif;
+  letter-spacing: 0.07em;
+  margin: 0;
+  position: absolute;
+  right: clamp(105px, 12vw, 180px);
+  text-transform: uppercase;
+  z-index: 2;
+}
+@media (max-width: 800px) {
+  .hero-section {
+    border-radius: 0;
+    margin: 0;
+    min-height: 100svh;
+  }
+  .hero-wordmark {
+    bottom: 11%;
+    font-size: 49vw;
+    left: 2%;
+    line-height: 0.72;
+    opacity: 0.68;
+  }
+  .hero-copy {
+    bottom: 164px;
+    left: 24px;
+    max-width: min(29ch, calc(100% - 48px));
+  }
+  .hero-data {
+    bottom: 28px;
+    gap: 22px;
+    left: 24px;
+  }
+  .hero-socials {
+    bottom: 28px;
+    right: 24px;
+  }
+  .hero-scroll {
+    display: none;
+  }
+}
+
+/* During the opening frame the model must sit in front of the Hero wordmark. */
+.story-canvas--hero {
+  clip-path: none;
+  z-index: 2;
+}
+@media (max-width: 800px) {
+  .story-canvas--hero {
+    clip-path: none;
+  }
+}
+
+/* Impact has a protected reading start below the fixed navigation. */
+#impact.content-section {
+  justify-content: flex-start;
+  padding-top: clamp(144px, 16vh, 184px);
+}
+.impact h2 {
+  font-family: "Bricolage Grotesque Variable", Arial, sans-serif;
+  font-weight: 470;
+}
+@media (max-width: 800px) {
+  #impact.content-section {
+    padding-top: 128px;
+  }
+}
+
+@media (max-width: 767px) {
+  .story-stage,
+  .edition-story {
+    min-height: auto;
+  }
+
+  .story-canvas {
+    align-items: center;
+    display: flex;
+    height: clamp(290px, 62vw, 420px);
+    justify-content: center;
+    left: auto;
+    margin: 0 auto 8px;
+    max-width: calc(100vw - 32px);
+    overflow: hidden;
+    order: 2;
+    position: relative;
+    top: auto;
+    width: min(100%, 420px);
+  }
+
+  .story-canvas--hero {
+    z-index: 1;
+  }
+
+  .hero-section {
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    justify-content: flex-start;
+    min-height: auto;
+    padding: 96px 20px 48px;
+  }
+
+  .hero-copy,
+  .hero-data,
+  .hero-socials,
+  .hero-scroll {
+    position: static;
+  }
+
+  .hero-copy {
+    bottom: auto;
+    left: auto;
+    max-width: 100%;
+    order: 1;
+  }
+
+  .hero-description {
+    max-width: none;
+  }
+
+  .hero-wordmark {
+    display: none;
+  }
+
+  .hero-data {
+    display: grid;
+    gap: 24px;
+    left: auto;
+    order: 3;
+    width: 100%;
+  }
+
+  .hero-data div {
+    min-width: 0;
+  }
+
+  .hero-socials {
+    justify-content: flex-start;
+    margin-top: 0;
+    order: 4;
+    right: auto;
+  }
+
+  .hero-scroll {
+    display: none;
+  }
+}
+
+/* Phone Hero: one protected model stage, never two competing GLBs. */
+@media (max-width: 767px) {
+  .story-stage { min-height: auto; }
+  .edition-story { margin-top: 0; min-height: auto; }
+  .story-canvas {
+    height: min(320px, 58vw);
+    left: 0;
+    margin: 0;
+    max-width: 100vw;
+    position: absolute;
+    top: 188px;
+    width: 100vw;
+    z-index: 0;
+  }
+  .edition-story { z-index: 1; }
+  .hero-section {
+    min-height: 720px;
+    padding: 96px 20px 40px;
+    position: relative;
+  }
+  .hero-copy { left: 20px; position: absolute; right: 20px; top: 112px; }
+  .hero-data { bottom: 40px; left: 20px; position: absolute; }
+  .hero-socials { bottom: 40px; position: absolute; right: 20px; }
+}
+
+@media (max-width: 767px) {
+  .story-canvas { top: 272px; }
+  .hero-data { right: 20px; width: auto; }
+}
+
+.mobile-keychain-stage { display: none; }
+@media (max-width: 767px) {
+  .mobile-keychain-stage {
+    display: block;
+    height: min(320px, 82vw);
+    margin: 32px auto 0;
+    max-width: 100%;
+    overflow: hidden;
+    width: 100%;
+  }
+  .mobile-keychain-stage canvas { display: block; height: 100% !important; width: 100% !important; }
+}

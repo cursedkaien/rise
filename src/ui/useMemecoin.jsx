@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const DEFAULT_REFRESH_INTERVAL = 15_000;
 const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
+let hasAttemptedSolanaSupply = false;
 
 /**
  * Fetches the most-liquid DexScreener pair for a token.
@@ -56,7 +57,8 @@ export default function useMemecoin(
 
       let totalSupply = null;
 
-      if (chainId === "solana") {
+      if (chainId === "solana" && !hasAttemptedSolanaSupply) {
+        hasAttemptedSolanaSupply = true;
         const supplyResponse = await fetch(SOLANA_RPC_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

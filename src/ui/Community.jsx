@@ -1,14 +1,22 @@
-import { Link } from "react-router";
-
 export default function Community() {
   return (
-    <>
-      <button>
-        <Link to="https://t.me/risecoincto">Join our Telegram community</Link>
-      </button>
-      <button>
-        <Link to="https://x.com/risecoincto?s=21">Join our X community</Link>
-      </button>
-    </>
+    <div className="community-actions">
+      <a
+        className="button button-primary"
+        href="https://t.me/risecoincto"
+        rel="noreferrer"
+        target="_blank"
+      >
+        Telegram
+      </a>
+      <a
+        className="button button-secondary"
+        href="https://x.com/risecoincto?s=21"
+        rel="noreferrer"
+        target="_blank"
+      >
+        Follow on X
+      </a>
+    </div>
   );
 }

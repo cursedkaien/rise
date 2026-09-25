@@ -3,44 +3,48 @@ import useMemecoin from "./useMemecoin";
 
 const CONTRACT_ADDRESS = "CpFJrfYq32Wae2Bt36hEAUwzdyT29WwVLpZmYDF7pump";
 
-const formatUsd = (amount) =>
+const formatUsd = (amount, isLoading) =>
   typeof amount === "number"
     ? new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
         maximumFractionDigits: 0,
       }).format(amount)
-    : "Loading…";
+    : isLoading ? "Loading…" : "Unavailable";
 
-const formatSupply = (amount) =>
+const formatSupply = (amount, isLoading) =>
   amount
     ? new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(
         Number(amount),
       )
-    : "Loading…";
+    : isLoading ? "Loading…" : "Unavailable";
 
 export default function Docs() {
   const [copied, setCopied] = useState(false);
-  const { data } = useMemecoin(CONTRACT_ADDRESS);
+  const { data, loading, error } = useMemecoin(CONTRACT_ADDRESS);
 
   const tokenomics = [
     ["Chain", "Solana"],
-    ["Total supply", formatSupply(data?.totalSupply)],
-    ["Market cap", formatUsd(data?.marketCap)],
-    ["FDV", formatUsd(data?.fdv)],
-    ["Liquidity", formatUsd(data?.liquidity)],
+    ["Total supply", formatSupply(data?.totalSupply, loading)],
+    ["Market cap", formatUsd(data?.marketCap, loading)],
+    ["FDV", formatUsd(data?.fdv, loading)],
+    ["Liquidity", formatUsd(data?.liquidity, loading)],
   ];
 
   const copyContractAddress = async () => {
-    await navigator.clipboard.writeText(CONTRACT_ADDRESS);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(CONTRACT_ADDRESS);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
     window.setTimeout(() => setCopied(false), 2_000);
   };
 
   return (
     <section className="docs" aria-labelledby="docs-title">
-      <h2 id="docs-title">Purchase Instructions</h2>
-      <p className="docs__intro">Just Three Steps.</p>
+      <h2 id="docs-title">Three steps</h2>
+      <p className="docs__intro">Use the contract address below and verify it before swapping.</p>
 
       <ol className="docs__steps">
         <li>
@@ -73,6 +77,8 @@ export default function Docs() {
           {copied ? "Copied" : "Copy address"}
         </button>
       </div>
+
+      {error && <p className="docs__status" role="status">Live token data is unavailable right now.</p>}
 
       <div className="docs__tokenomics">
         <div>
