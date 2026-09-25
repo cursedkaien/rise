@@ -11,6 +11,7 @@ import Keychain1 from "./Keychain1";
 import SceneErrorBoundary from "./SceneErrorBoundary";
 import { supportsWebGL } from "./webgl";
 import Keychain2 from "./Keychain2";
+import { isSoundEnabled, playScrollChime, setSoundEnabled as setSiteSoundEnabled } from "./audio";
 
 const clamp = (value) => Math.min(Math.max(value, 0), 1);
 
@@ -156,7 +157,7 @@ function MobileKeychainStage({ Model, label, webglAvailable }) {
   );
 }
 
-function Navigation() {
+function Navigation({ soundEnabled, onToggleSound }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -183,9 +184,19 @@ function Navigation() {
         <a href="#community" onClick={closeMenu}>Community</a>
         <a href="#docs" onClick={closeMenu}>How to buy</a>
       </nav>
-      <a className="edition-cta" href="#docs" onClick={closeMenu}>
-        Token details
-      </a>
+      <div className="edition-nav-tools">
+        <button
+          className="edition-sound"
+          type="button"
+          aria-pressed={soundEnabled}
+          onClick={onToggleSound}
+        >
+          Sound {soundEnabled ? "on" : "off"}
+        </button>
+        <a className="edition-cta" href="#docs" onClick={closeMenu}>
+          Token details
+        </a>
+      </div>
     </header>
   );
 }
@@ -197,6 +208,17 @@ export default function Background() {
     () => typeof window !== "undefined" && window.innerWidth < 768,
   );
   const [webglAvailable] = useState(supportsWebGL);
+  const [soundEnabled, setSoundEnabled] = useState(isSoundEnabled);
+  const soundEnabledRef = useRef(isSoundEnabled());
+  const previousProgressRef = useRef(0);
+  const playedSoundCuesRef = useRef({ reassembly: false, handoff: false });
+
+  const toggleSound = () => {
+    const nextEnabled = !soundEnabledRef.current;
+    soundEnabledRef.current = nextEnabled;
+    setSiteSoundEnabled(nextEnabled);
+    setSoundEnabled(nextEnabled);
+  };
 
   useEffect(() => {
     const updateViewport = () => setIsCompactViewport(window.innerWidth < 768);
@@ -210,9 +232,23 @@ export default function Background() {
       const stage = stageRef.current;
       if (!stage) return;
       const travel = stage.offsetHeight - window.innerHeight;
-      setProgress(
-        travel > 0 ? clamp((window.scrollY - stage.offsetTop) / travel) : 0,
-      );
+      const nextProgress = travel > 0
+        ? clamp((window.scrollY - stage.offsetTop) / travel)
+        : 0;
+      const previousProgress = previousProgressRef.current;
+      setProgress(nextProgress);
+
+      if (nextProgress > previousProgress && soundEnabledRef.current) {
+        if (previousProgress < 0.28 && nextProgress >= 0.28 && !playedSoundCuesRef.current.reassembly) {
+          playScrollChime([587.33, 783.99]);
+          playedSoundCuesRef.current.reassembly = true;
+        }
+        if (previousProgress < 0.62 && nextProgress >= 0.62 && !playedSoundCuesRef.current.handoff) {
+          playScrollChime([659.25, 880]);
+          playedSoundCuesRef.current.handoff = true;
+        }
+      }
+      previousProgressRef.current = nextProgress;
     };
     updateProgress();
     window.addEventListener("scroll", updateProgress, { passive: true });
@@ -225,7 +261,7 @@ export default function Background() {
 
   return (
     <div className="edition-shell">
-      <Navigation />
+      <Navigation soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       <div className="story-stage" ref={stageRef}>
         {webglAvailable && !isCompactViewport && (
           <div

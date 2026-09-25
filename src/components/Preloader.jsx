@@ -2,6 +2,12 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect, useRef, useState } from "react";
 import SceneErrorBoundary from "./SceneErrorBoundary";
 import GlobeScene from "./GlobeScene";
+import {
+  isSoundEnabled,
+  setSoundEnabled as setSiteSoundEnabled,
+  startPreloaderMusic,
+  stopPreloaderMusic,
+} from "./audio";
 
 const BUILD_DURATION = 1200;
 const HOLD_DURATION = 1500;
@@ -27,7 +33,16 @@ export default function Preloader({ onComplete }) {
   const [progress, setProgress] = useState(0);
   const [opacity, setOpacity] = useState(1);
   const [sceneReady, setSceneReady] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(isSoundEnabled);
   const completedRef = useRef(false);
+
+  const togglePreloaderSound = () => {
+    const nextEnabled = !soundEnabled;
+    setSoundEnabled(nextEnabled);
+    setSiteSoundEnabled(nextEnabled);
+    if (nextEnabled) startPreloaderMusic();
+    else stopPreloaderMusic();
+  };
 
   useEffect(() => {
     if (!sceneReady) return undefined;
@@ -62,6 +77,7 @@ export default function Preloader({ onComplete }) {
         frameId = requestAnimationFrame(animate);
       } else if (!completedRef.current) {
         completedRef.current = true;
+        stopPreloaderMusic();
         onComplete?.();
       }
     };
@@ -88,31 +104,50 @@ export default function Preloader({ onComplete }) {
         transition: "opacity 120ms linear",
       }}
     >
-      <button
-        type="button"
-        onClick={() => {
-          if (completedRef.current) return;
-          completedRef.current = true;
-          onComplete?.();
-        }}
-        style={{
-          background: "transparent",
-          border: 0,
-          color: "rgba(243, 240, 232, 0.72)",
-          cursor: "pointer",
-          fontFamily: "system-ui, sans-serif",
-          fontSize: "0.72rem",
-          letterSpacing: "0.1em",
-          padding: "16px",
-          position: "absolute",
-          right: "2vw",
-          textTransform: "uppercase",
-          top: "2vh",
-          zIndex: 2,
-        }}
-      >
-        Skip
-      </button>
+      <div style={{ position: "absolute", top: "2vh", right: "2vw", zIndex: 2, display: "flex", gap: "8px" }}>
+        <button
+          type="button"
+          aria-pressed={soundEnabled}
+          aria-label={soundEnabled ? "Disable preloader sound" : "Enable preloader sound"}
+          onClick={togglePreloaderSound}
+          style={{
+            background: "transparent",
+            border: "1px solid rgba(243, 240, 232, 0.24)",
+            borderRadius: "999px",
+            color: "rgba(243, 240, 232, 0.72)",
+            cursor: "pointer",
+            fontFamily: "system-ui, sans-serif",
+            fontSize: "0.68rem",
+            letterSpacing: "0.08em",
+            padding: "12px 16px",
+            textTransform: "uppercase",
+          }}
+        >
+          Sound {soundEnabled ? "on" : "off"}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (completedRef.current) return;
+            completedRef.current = true;
+            stopPreloaderMusic();
+            onComplete?.();
+          }}
+          style={{
+            background: "transparent",
+            border: 0,
+            color: "rgba(243, 240, 232, 0.72)",
+            cursor: "pointer",
+            fontFamily: "system-ui, sans-serif",
+            fontSize: "0.72rem",
+            letterSpacing: "0.1em",
+            padding: "16px",
+            textTransform: "uppercase",
+          }}
+        >
+          Skip
+        </button>
+      </div>
 
       <SceneErrorBoundary onError={() => setSceneReady(true)} fallback={null}>
       <Canvas
